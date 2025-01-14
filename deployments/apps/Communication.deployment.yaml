@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: communication-cronjob
+  labels:
+    app: communication-cronjob
+spec:
+  schedule: "0 0 * * *" # Runs daily at midnight
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: communication-cronjob
+        spec:
+          containers:
+          - name: communication-consumer
+            image: hoangvdang/simple_microservice:comunication-<commit_id>
+            env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Development"
+            resources:
+              limits:
+                memory: "256Mi"
+                cpu: "500m"
+              requests:
+                memory: "128Mi"
+                cpu: "250m"
+          restartPolicy: OnFailure # Ensures the job restarts only if it fails

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  labels:
+    app: auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+      - name: auth-service
+        image: hoangvdang/simple_microservice:auth-v1
+        ports:
+        - containerPort: 443
+        env:
+        - name: SIGNING_CREDENTIAL
+          value: "/secrets/IdentityServer4Auth.pfx"
+        - name: IDENTITY_SERVER4_CONNECTION_STRING
+          value: "Host=127.0.0.1;port=5432;Database=IdentityServer;Username=postgres;Password=postgres"
+        - name: PROTECT_KEY_PATH
+          value: "/secrets"
+        - name: IDENTITY_CONNECTION_STRING
+          value: "Host=127.0.0.1;port=5432;Database=Identity;Username=postgres;Password=postgres"
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: IDENTITY_SERVICES_URL
+          value: "https://localhost:44375"
+        - name: TOKEN_EXPIRE_TIME_IN_HOURS
+          value: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  labels:
+    app: auth-service
+spec:
+  type: NodePort
+  ports:
+  - port: 443
+    targetPort: 443
+    nodePort: 30001
+  selector:
+    app: auth-service

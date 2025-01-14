@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: post-service
+  labels:
+    app: post-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: post-service
+  template:
+    metadata:
+      labels:
+        app: post-service
+    spec:
+      containers:
+      - name: post-service
+        image: hoangvdang/simple_microservice:post-v1
+        ports:
+        - containerPort: 443
+        env:
+        - name: WRITE_DATABASE_CONNECTION_STRING
+          value: "Host=127.0.0.1;port=5432;Database=Post;Username=postgres;Password=postgres"
+        - name: READ_DATABASE_CONNECTION_STRING
+          value: "Host=127.0.0.1;port=5432;Database=Post;Username=postgres;Password=postgres"
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: REDIS_HOST
+          value: "127.0.0.1:6379,password=admin"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: post-service
+  labels:
+    app: post-service
+spec:
+  type: NodePort
+  ports:
+  - port: 443
+    targetPort: 443
+    nodePort: 30002
+  selector:
+    app: post-service
